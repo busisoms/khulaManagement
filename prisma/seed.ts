@@ -9,7 +9,7 @@
  * Story built into the data:
  * - Weeks 1–4 (baseline): steady sales, mostly from referrals.
  * - 3 overdue customers; the largest owes R900 and is 41 days overdue.
- * - A materials-cost spike in week 6.
+ * - A materials-cost spike in week 6, and a one-off machine repair in week 7.
  * - 2 fabric bolts that haven't moved for 45+ days.
  * - A small equipment loan with an instalment due in 5 days.
  * - A promo post done in week 5, followed by social enquiries (2 converted).
@@ -27,12 +27,13 @@ const R = (rands: number) => Math.round(rands * 100); // rands -> cents
 const startOfToday = new Date();
 startOfToday.setHours(0, 0, 0, 0);
 
-/** A date `n` days before today, at 10:00 local time (plus optional hours). */
+/** A date `n` days before today at the given hour. Never later than "now" for past/today dates. */
 function daysAgo(n: number, hour = 10): Date {
   const d = new Date(startOfToday);
   d.setDate(d.getDate() - n);
   d.setHours(hour, 0, 0, 0);
-  return d;
+  const now = new Date();
+  return n >= 0 && d > now ? now : d;
 }
 
 function daysFromNow(n: number): Date {
@@ -232,10 +233,13 @@ async function main() {
     const first = weekStart(week);
     await prisma.expense.create({ data: { businessId, date: daysAgo(first - 1, 8), category: "transport", amountCents: R(60), note: "Taxi to town" } });
     // Materials-cost spike in week 6.
-    const materials = week === 6 ? 2400 : between(250, 400, 10);
+    const materials = week === 6 ? 3500 : between(250, 400, 10);
     const note = week === 6 ? "Lining and fabric — supplier prices up" : "Thread, zips, lining";
     await prisma.expense.create({ data: { businessId, date: daysAgo(first - 2, 11), category: "materials", amountCents: R(materials), note } });
   }
+
+  // One-off repair in week 7.
+  await prisma.expense.create({ data: { businessId, date: daysAgo(weekStart(7) - 3, 14), category: "other", amountCents: R(900), note: "Overlocker repair" } });
 
   // ---------- stock ----------
   await prisma.stockItem.createMany({

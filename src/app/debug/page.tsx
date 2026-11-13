@@ -1,4 +1,7 @@
 import { db } from "@/lib/db";
+import { loadBusinessData } from "@/lib/data";
+import { computeFacts } from "@/lib/advisor/facts";
+import { growthScore } from "@/lib/growth/score";
 
 // Developer-only view of the raw records. Not linked from the app's navigation.
 export const dynamic = "force-dynamic";
@@ -58,10 +61,18 @@ export default async function DebugPage() {
     return <main className="p-6">No businesses yet. Run <code>npm run db:reset</code>.</main>;
   }
 
+  const metrics = await Promise.all(
+    businesses.map(async (b) => {
+      const data = await loadBusinessData(b.id);
+      const done = b.actions.filter((a) => a.status === "done").length;
+      return { facts: computeFacts(data), growth: growthScore(data, done) };
+    }),
+  );
+
   return (
     <main className="mx-auto max-w-6xl p-6">
       <h1 className="mb-6 text-2xl font-bold">Debug: seeded records</h1>
-      {businesses.map((b) => (
+      {businesses.map((b, i) => (
         <div key={b.id} className="mb-12">
           <h2 className="mb-4 text-xl font-bold">
             {b.name} — {b.category}, {b.area}
@@ -70,6 +81,13 @@ export default async function DebugPage() {
             Records: {b.recordKeeping} · Goal: {b.growthGoal} · Budget: {rands(b.monthlyBudgetCents)}/month · Modules:{" "}
             {JSON.parse(b.modules).join(", ")}
           </p>
+
+          <section className="mb-8">
+            <h2 className="mb-2 text-lg font-semibold">Computed metrics (facts sent to the advisor)</h2>
+            <pre className="overflow-x-auto rounded bg-gray-100 p-3 text-xs">{JSON.stringify(metrics[i].facts, null, 2)}</pre>
+            <h2 className="mt-4 mb-2 text-lg font-semibold">Growth score</h2>
+            <pre className="overflow-x-auto rounded bg-gray-100 p-3 text-xs">{JSON.stringify(metrics[i].growth, null, 2)}</pre>
+          </section>
 
           <Table title="Customers" headers={["Name", "Phone"]} rows={b.customers.map((c) => [c.name, c.phone ?? "—"])} />
           <Table
