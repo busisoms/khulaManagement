@@ -12,7 +12,7 @@ const ITEMS = [
 
 function Icon({ d }: { d: string }) {
   return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d={d} />
     </svg>
   );
@@ -30,7 +30,7 @@ export function NavLinks({ variant }: { variant: "sidebar" | "bottom" }) {
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-sm font-medium ${active ? "text-brand" : "text-muted"}`}
+              className={`flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-xs font-semibold ${active ? "text-brand" : "text-muted"}`}
             >
               <Icon d={item.icon} />
               {item.label}
@@ -42,7 +42,7 @@ export function NavLinks({ variant }: { variant: "sidebar" | "bottom" }) {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-base font-medium ${active ? "bg-brand-soft text-brand-dark" : "text-ink hover:bg-paper"}`}
+            className={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-[15px] font-medium transition ${active ? "bg-navy text-white shadow-sm" : "text-muted hover:bg-paper hover:text-ink"}`}
           >
             <Icon d={item.icon} />
             {item.label}

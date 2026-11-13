@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import "@fontsource-variable/inter";
 import "./globals.css";
 import { DemoBanner } from "@/components/DemoBanner";
 import { RegisterServiceWorker } from "@/components/RegisterServiceWorker";
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1e5b3e",
+  themeColor: "#0b1f33",
   width: "device-width",
   initialScale: 1,
 };

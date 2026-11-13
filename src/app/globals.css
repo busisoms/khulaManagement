@@ -1,19 +1,34 @@
 @import "tailwindcss";
 
-/* Warm, plain palette. All text/background pairs meet WCAG AA. */
+/*
+ * Clean fintech look: cool neutral background, white surfaces with soft depth,
+ * deep navy for the "balance" surfaces, emerald for growth.
+ * All text/background pairs meet WCAG AA.
+ */
 @theme {
-  --color-paper: #faf7f2;
+  --color-paper: #f4f6f8; /* page background */
   --color-card: #ffffff;
-  --color-ink: #1f2a24;
-  --color-muted: #55615a;
-  --color-line: #e4ddd2;
-  --color-brand: #1e5b3e;
-  --color-brand-dark: #154530;
-  --color-brand-soft: #e6f0ea;
-  --color-accent: #b4541a;
-  --color-accent-soft: #fbeee4;
-  --color-warn-soft: #fdf3d8;
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-ink: #0b1524; /* main text */
+  --color-muted: #5b6676; /* secondary text */
+  --color-line: #e3e8ee; /* borders and dividers */
+
+  --color-navy: #0b1f33; /* balance card */
+  --color-navy-2: #12304d;
+
+  --color-brand: #047857; /* emerald: primary actions, growth */
+  --color-brand-dark: #065f46;
+  --color-brand-soft: #e7f6ef;
+  --color-mint: #34d399; /* highlights on navy */
+
+  --color-accent: #b42318; /* negative numbers, losses */
+  --color-accent-soft: #fdecea;
+  --color-warn: #b54708;
+  --color-warn-soft: #fef4e6;
+
+  --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  --shadow-card: 0 1px 2px rgb(11 21 36 / 0.04), 0 4px 16px rgb(11 21 36 / 0.05);
+  --shadow-raised: 0 10px 30px rgb(11 31 51 / 0.22);
 }
 
 html {
@@ -24,31 +39,91 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
 }
 
-/* Shared building blocks (declared as utilities so they can be combined) */
+/* ---------- building blocks ---------- */
+
 @utility card {
-  @apply rounded-2xl border border-line bg-card p-5;
+  @apply rounded-2xl bg-card p-5 shadow-card ring-1 ring-line/70;
 }
+@utility card-navy {
+  @apply rounded-3xl p-6 text-white shadow-raised;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgb(52 211 153 / 0.18) 0%, transparent 55%),
+    linear-gradient(135deg, var(--color-navy) 0%, var(--color-navy-2) 100%);
+}
+
+/* Money and counts: tabular figures so columns line up. */
+@utility num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+@utility eyebrow {
+  @apply text-xs font-semibold tracking-[0.08em] text-muted uppercase;
+}
+
 @utility btn {
-  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-base font-semibold transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-60;
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-[15px] font-semibold transition focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-60;
 }
 @utility btn-primary {
-  @apply btn bg-brand text-white hover:bg-brand-dark;
+  @apply btn bg-brand text-white shadow-sm hover:bg-brand-dark active:translate-y-px;
 }
 @utility btn-secondary {
-  @apply btn border border-line bg-card text-ink hover:bg-paper;
+  @apply btn bg-card text-ink ring-1 ring-line hover:bg-paper;
 }
 @utility btn-quiet {
-  @apply btn text-muted underline-offset-4 hover:underline;
+  @apply btn text-muted hover:bg-paper hover:text-ink;
 }
 @utility field-label {
-  @apply mb-1.5 block text-base font-semibold;
+  @apply mb-1.5 block text-sm font-semibold text-ink;
 }
 @utility input {
-  @apply block min-h-11 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-base text-ink focus:border-brand focus:outline-2 focus:outline-brand;
+  @apply block min-h-12 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-base text-ink transition placeholder:text-muted/70 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none;
 }
 @utility chip {
-  @apply inline-flex items-center gap-1 rounded-full bg-brand-soft px-3 py-1 text-sm font-medium text-brand-dark;
+  @apply inline-flex items-center gap-1 rounded-full bg-paper px-3 py-1 text-sm font-medium text-ink ring-1 ring-line;
+}
+@utility pill-up {
+  @apply inline-flex items-center gap-1 rounded-full bg-mint/15 px-2.5 py-0.5 text-sm font-semibold text-mint;
+}
+@utility pill-down {
+  @apply inline-flex items-center gap-1 rounded-full bg-[#f97066]/15 px-2.5 py-0.5 text-sm font-semibold text-[#fda29b];
+}
+
+/* ---------- growth tree motion ---------- */
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-1.2deg);
+  }
+  50% {
+    transform: rotate(1.2deg);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tree-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: sway 6s ease-in-out infinite;
+}
+.tree-rise {
+  animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tree-sway,
+  .tree-rise {
+    animation: none;
+  }
 }
