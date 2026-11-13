@@ -12,7 +12,10 @@
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset --force",
     "db:seed": "prisma db seed",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "start:prod": "prisma migrate deploy && tsx prisma/seed-if-empty.ts && next start -p ${PORT:-3000}",
+    "icons": "node scripts/make-icons.mjs",
+    "e2e": "node --experimental-websocket scripts/e2e-smoke.mjs http://localhost:3000 /tmp/growth-advisor-e2e-profile 360"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
@@ -37,5 +40,8 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
