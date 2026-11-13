@@ -307,7 +307,7 @@ export async function seedDemo(prisma: PrismaClient): Promise<string> {
       recommendationId: rec.id,
       createdAt: daysAgo(27, 8),
       type: "promo_post",
-      payload: JSON.stringify({ text: promoText }),
+      payload: JSON.stringify({ title: "Share a post about your business", text: promoText }),
       status: "done",
       approvedAt: daysAgo(27, 9),
       completedAt: daysAgo(27, 18),

@@ -4,7 +4,8 @@
 const r = (rands: number) => `R${rands.toLocaleString("en-ZA", { maximumFractionDigits: 2 })}`;
 
 export function paymentReminderText(opts: { businessName: string; customer: string; owedRands: number; item?: string }) {
-  const first = opts.customer.split(" ")[0];
+  // "Lindiwe M." -> "Lindiwe"; "Mrs Khumalo" stays as is.
+  const first = opts.customer.replace(/\s+[A-Z]\.?$/, "");
   const forWhat = opts.item ? ` for the ${opts.item.toLowerCase()}` : "";
   return (
     `Hi ${first}, this is ${opts.businessName}. I hope you are well. ` +

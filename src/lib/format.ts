@@ -21,3 +21,12 @@ export function parseRandsToCents(input: string): number | null {
   if (!/^\d+(\.\d{1,2})?$/.test(clean)) return null;
   return Math.round(parseFloat(clean) * 100);
 }
+
+/** Evidence values are plain numbers; guess the unit from the label for display. */
+export function formatEvidenceValue(label: string, value: number | string): string {
+  if (typeof value === "string") return value;
+  if (/days?\b/i.test(label)) return `${value} day${value === 1 ? "" : "s"}`;
+  if (/%|pct|percent|rate/i.test(label)) return `${value}%`;
+  if (/count|number|sales from|enquir|customers|times|records|quantity/i.test(label)) return String(value);
+  return formatRands(Math.round(value * 100));
+}
