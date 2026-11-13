@@ -1,10 +1,14 @@
-# Render blueprint: one Node web service with a persistent disk for SQLite.
+# Render blueprint: one free Node web service with SQLite on the instance's
+# ephemeral filesystem. The free plan has no persistent disks, so the database
+# is recreated (and the demo reseeded) whenever the service restarts, redeploys
+# or wakes up after idling. For durable data, switch to plan: starter and add a
+# disk mounted at /data with DATABASE_URL=file:/data/app.db.
 # Secrets (LLM_API_KEY, DEMO_PASSCODE) are set in the Render dashboard, never here.
 services:
   - type: web
     name: growth-advisor
     runtime: node
-    plan: starter # persistent disks need a paid plan
+    plan: free
     buildCommand: npm ci && npm run build
     startCommand: npm run start:prod
     healthCheckPath: /api/health
@@ -12,7 +16,7 @@ services:
       - key: NODE_VERSION
         value: "20"
       - key: DATABASE_URL
-        value: file:/data/app.db
+        value: file:./app.db # relative to prisma/schema.prisma
       - key: LLM_PROVIDER
         value: anthropic
       - key: LLM_MODEL
@@ -21,7 +25,3 @@ services:
         sync: false
       - key: DEMO_PASSCODE
         sync: false
-    disk:
-      name: data
-      mountPath: /data
-      sizeGB: 1

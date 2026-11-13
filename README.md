@@ -147,15 +147,17 @@ The seed data is relative to the day it runs, so the story (R900, 41 days overdu
 
 ## Deploy (Render)
 
-The repo includes a `render.yaml` blueprint. In Render, choose **New → Blueprint** and point it at this repo. The blueprint sets up:
+The repo includes a `render.yaml` blueprint for Render's **free plan**. In Render, choose **New → Blueprint** and point it at this repo. The blueprint sets up:
 
-- One **Node web service** with a **1 GB persistent disk** mounted at `/data`
-- `DATABASE_URL=file:/data/app.db`
+- One free **Node web service**
+- `DATABASE_URL=file:./app.db` (SQLite on the instance's ephemeral filesystem)
 - Build: `npm ci && npm run build`
 - Start: `npm run start:prod`, which runs `prisma migrate deploy`, seeds **only if the DB is empty** (`prisma/seed-if-empty.ts`, so data survives redeploys), then `next start`
 - Health check: `/api/health`
 
-Set **`LLM_API_KEY`** and **`DEMO_PASSCODE`** in the Render dashboard, never in the repo. Persistent disks need a **paid Render plan** (the blueprint uses `starter`).
+Set **`LLM_API_KEY`** and **`DEMO_PASSCODE`** in the Render dashboard, never in the repo.
+
+**Free plan caveats:** the service sleeps after ~15 minutes without traffic (the first request after that takes up to a minute), and the free plan has no persistent disk. The database is recreated and the demo reseeded on every restart, redeploy or wake-up, so anything visitors add is temporary. For durable data, switch to `plan: starter` and add a disk mounted at `/data` with `DATABASE_URL=file:/data/app.db`.
 
 **Railway** also works: use the same build and start commands, set the same env vars, and add a volume mounted at `/data`.
 
