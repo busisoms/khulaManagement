@@ -1,0 +1,170 @@
+// Growth Advisor data model.
+//
+// Conventions:
+// - Money is stored as integer cents (`...Cents`). R1 = 100 cents.
+// - "Enum-like" fields are plain Strings validated with Zod in src/types/,
+//   because SQLite has no native enums. Allowed values are listed in comments.
+// - JSON fields are stored as Strings and parsed in code (SQLite has no JSON column).
+// - Derived values are NOT stored: a sale's amount owed = amountCents - sum(payments),
+//   and its due date = sale date + DUE_DAYS (see src/lib/metrics).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Business {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+  name               String
+  category           String // tailoring | tutoring | it_services | retail | other
+  area               String
+  recordKeeping      String // none | paper | digital
+  growthGoal         String // profit | customers | cash_collected
+  monthlyBudgetCents Int      @default(0)
+  modules            String   @default("[]") // JSON list: sales | payments | reach | stock | loans
+
+  customers       Customer[]
+  sales           Sale[]
+  payments        Payment[]
+  expenses        Expense[]
+  stockItems      StockItem[]
+  loans           Loan[]
+  enquiries       Enquiry[]
+  recommendations Recommendation[]
+  actions         Action[]
+  auditEvents     AuditEvent[]
+}
+
+model Customer {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name       String
+  phone      String?
+
+  sales Sale[]
+}
+
+model Sale {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  date        DateTime
+  description String
+  amountCents Int
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  source      String    @default("unknown") // referral | walk_in | social | other | unknown
+
+  payments Payment[]
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  date        DateTime
+  amountCents Int
+  saleId      String
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  method      String   @default("cash") // cash | card | eft | other
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  date        DateTime
+  category    String // materials | transport | rent | utilities | advertising | other
+  amountCents Int
+  note        String   @default("")
+}
+
+model StockItem {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name          String
+  unit          String
+  quantity      Int
+  unitCostCents Int
+  lastMovedAt   DateTime
+}
+
+model Loan {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  businessId      String
+  business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  lender          String
+  principalCents  Int
+  balanceCents    Int
+  instalmentCents Int
+  nextDueDate     DateTime
+}
+
+model Enquiry {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  date       DateTime
+  source     String // referral | walk_in | social | other | unknown
+  converted  Boolean  @default(false)
+  note       String   @default("")
+}
+
+model Recommendation {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  area        String // profit | payments | reach | stock | loans
+  finding     String
+  evidence    String // JSON: { label, value }[]
+  actionType  String // payment_reminder | promo_post | stock_promotion | expense_review | loan_reminder | record_more
+  draftText   String
+  origin      String // llm | rules
+  status      String   @default("proposed") // proposed | accepted | dismissed
+
+  actions Action[]
+}
+
+model Action {
+  id               String         @id @default(cuid())
+  createdAt        DateTime       @default(now())
+  businessId       String
+  business         Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  recommendationId String
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  type             String // same values as Recommendation.actionType
+  payload          String         @default("{}") // JSON
+  status           String         @default("proposed") // proposed | approved | done | dismissed | cancelled
+  approvedAt       DateTime?
+  completedAt      DateTime?
+  outcomeNote      String?
+
+  auditEvents AuditEvent[]
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  actionId   String
+  action     Action   @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  eventType  String
+  timestamp  DateTime @default(now())
+  details    String   @default("{}") // JSON
+}
