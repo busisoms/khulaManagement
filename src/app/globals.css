@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Warm, plain palette. All text/background pairs meet WCAG AA. */
+@theme {
+  --color-paper: #faf7f2;
+  --color-card: #ffffff;
+  --color-ink: #1f2a24;
+  --color-muted: #55615a;
+  --color-line: #e4ddd2;
+  --color-brand: #1e5b3e;
+  --color-brand-dark: #154530;
+  --color-brand-soft: #e6f0ea;
+  --color-accent: #b4541a;
+  --color-accent-soft: #fbeee4;
+  --color-warn-soft: #fdf3d8;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-size: 16px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Shared building blocks (declared as utilities so they can be combined) */
+@utility card {
+  @apply rounded-2xl border border-line bg-card p-5;
+}
+@utility btn {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-base font-semibold transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-60;
+}
+@utility btn-primary {
+  @apply btn bg-brand text-white hover:bg-brand-dark;
+}
+@utility btn-secondary {
+  @apply btn border border-line bg-card text-ink hover:bg-paper;
+}
+@utility btn-quiet {
+  @apply btn text-muted underline-offset-4 hover:underline;
+}
+@utility field-label {
+  @apply mb-1.5 block text-base font-semibold;
+}
+@utility input {
+  @apply block min-h-11 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-base text-ink focus:border-brand focus:outline-2 focus:outline-brand;
+}
+@utility chip {
+  @apply inline-flex items-center gap-1 rounded-full bg-brand-soft px-3 py-1 text-sm font-medium text-brand-dark;
 }

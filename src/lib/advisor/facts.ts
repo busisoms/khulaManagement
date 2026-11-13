@@ -11,7 +11,6 @@ import {
   dataCoverage,
   expenses,
   futureRecords,
-  income,
   lastNDays,
   loanDue,
   overdue,
